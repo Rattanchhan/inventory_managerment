@@ -1,4 +1,4 @@
-package com.query_mysql.demo.security;
+package com.inventory_managerment.security;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;

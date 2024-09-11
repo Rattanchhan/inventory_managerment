@@ -6,7 +6,7 @@ import com.inventory_managerment.feature.user.dto.UserRequest;
 import com.inventory_managerment.feature.user.dto.UserResponse;
 import com.inventory_managerment.feature.user.dto.UserUpdateRequest;
 import com.inventory_managerment.mapper.user.UserMapper;
-import com.query_mysql.demo.security.HashingPassword;
+import com.inventory_managerment.security.HashingPassword;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -14,7 +14,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 

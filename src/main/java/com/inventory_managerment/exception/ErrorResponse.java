@@ -1,4 +1,4 @@
-package com.query_mysql.demo.exception;
+package com.inventory_managerment.exception;
 
 import lombok.Builder;
 
