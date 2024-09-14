@@ -1,6 +1,7 @@
 package com.inventory_managerment.domain;
 import com.inventory_managerment.baseEntity.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Positive;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -32,6 +33,9 @@ public class User extends BaseEntity {
     private String status;
     private String remark;
 
+    private String phoneNumber;
+    private String email;
+
     @OneToMany(mappedBy = "user")
     private List<Order> orders;
 
@@ -48,6 +52,6 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user")
     private List<User> users;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private Role role;
 }

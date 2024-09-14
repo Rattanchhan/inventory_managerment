@@ -1,6 +1,8 @@
 package com.inventory_managerment.domain;
 import java.util.*;
 
+import org.springframework.security.core.GrantedAuthority;
+
 import com.inventory_managerment.baseEntity.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -19,7 +21,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Role extends BaseEntity {
+public class Role extends BaseEntity implements GrantedAuthority{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -31,4 +33,9 @@ public class Role extends BaseEntity {
 
     @OneToMany(mappedBy = "role")
     private Set<Role_Permission> rolePermissions = new HashSet<>();
+
+    @Override
+    public String getAuthority() {
+        return "ROLE_"+name;
+    }
 }
