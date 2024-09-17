@@ -1,0 +1,88 @@
+public class CustomUserDetail implements UserDetails{
+
+    private User user;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        Set<GrantedAuthority> authorities = new HashSet<>();
+        authorities.add(user.getRole());
+        return authorities;
+    }
+
+    @Override
+    public String getPassword() {
+        return user.getPassword();
+    }
+
+    @Override
+    public String getUsername() {
+        return user.getPhoneNumber();
+    }
+    
+}
+
+public class UserDetailServiceImplementation implements UserDetailsService {
+    private final UserRepository userRepository;
+
+    @Override
+    public UserDetails loadUserByUsername(String phoneNumber) throws UsernameNotFoundException {
+        User user = userRepository
+        .findByPhoneNumber(phoneNumber)
+        .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"User has not been found..." ));
+
+        CustomUserDetail customUserDetail = new CustomUserDetail();
+        customUserDetail.setUser(user);
+
+        for(GrantedAuthority grantedAuthority:customUserDetail.getAuthorities()){
+            log.info("{}",grantedAuthority.getAuthority());
+        }
+
+        return customUserDetail;
+    }
+    
+}
+
+public class SecurityConfig {
+
+    private final PasswordEncoder passwordEncoder;
+    private final UserDetailsService userDetailsService;
+
+    @Bean
+    DaoAuthenticationProvider configureDaoAuthenticationProvider(){
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userDetailsService);
+        authenticationProvider.setPasswordEncoder(passwordEncoder);
+        return authenticationProvider;
+    }
+
+    @Bean
+    SecurityFilterChain configureApiSecurity(HttpSecurity httpSecurity) throws Exception{
+        // Security Mechanism (HTTP Basic Auth)
+        // HTTP Basic Auth (Username and Password)
+
+        httpSecurity.authorizeHttpRequests(endpoint-> endpoint.
+        requestMatchers(HttpMethod.POST,"api/v1/users/**")
+        .hasRole("Administrator")
+
+        .requestMatchers(HttpMethod.GET,"api/v1/users/**")
+        .hasRole("Administrator")
+
+        .requestMatchers(HttpMethod.DELETE,"api/v1/users/**")  
+        .hasAnyRole("ADMIN")
+        .anyRequest().authenticated());
+
+
+        httpSecurity.httpBasic(Customizer.withDefaults());
+
+        //Disable csrf token 
+        httpSecurity.csrf(token -> token.disable());
+
+
+        // Make Stateless Session
+
+        httpSecurity.sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        
+        return httpSecurity.build();
+    }
+    
+}

@@ -3,13 +3,16 @@ package com.inventory_managerment.security;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+// import org.springframework.security.core.userdetails.User;
+// import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+// import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import lombok.RequiredArgsConstructor;
@@ -18,9 +21,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final PasswordEncoder passwordEncoder;
+    private final UserDetailsService userDetailsService;
 
-   @Bean
+   /*@Bean
    InMemoryUserDetailsManager configureUserSecurity(){
 
         UserDetails admin = User.withUsername( "admin")
@@ -43,6 +46,20 @@ public class SecurityConfig {
 
        return manager;
     }
+*/
+
+    @Bean
+    DaoAuthenticationProvider configureDaoAuthenticationProvider(){
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userDetailsService);
+        authenticationProvider.setPasswordEncoder(passwordEncoder());
+        return authenticationProvider;
+    }
+    
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+       return new BCryptPasswordEncoder();
+    }
 
     @Bean
     SecurityFilterChain configureApiSecurity(HttpSecurity httpSecurity) throws Exception{
@@ -51,10 +68,10 @@ public class SecurityConfig {
 
         httpSecurity.authorizeHttpRequests(endpoint-> endpoint.
         requestMatchers(HttpMethod.POST,"api/v1/users/**")
-        .hasAnyRole("USER")
+        .hasRole("Administrator")
 
         .requestMatchers(HttpMethod.GET,"api/v1/users/**")
-        .hasAnyRole("USER","ADMIN")
+        .hasRole("Administrator")
 
         .requestMatchers(HttpMethod.DELETE,"api/v1/users/**")  
         .hasAnyRole("ADMIN")
