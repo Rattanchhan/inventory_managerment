@@ -1,5 +1,4 @@
-package com.query_mysql.demo.exception;
-
+package com.inventory_managerment.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;

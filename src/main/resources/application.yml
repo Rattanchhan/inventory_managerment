@@ -5,6 +5,13 @@ spring:
     password: R@mySql@0900
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  # security configuration
+  
+  # security:
+  #   user:
+  #     name: ratana
+  #     password: R@0900
+
   flyway:
     enabled: true
     url: jdbc:mysql://localhost:3306/inventory

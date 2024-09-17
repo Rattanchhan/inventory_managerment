@@ -1,4 +1,4 @@
-package com.query_mysql.demo.util;
+package com.inventory_managerment.util;
 
 public class RandomUntil {
 }
