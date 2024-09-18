@@ -1,7 +1,6 @@
 package com.inventory_managerment.domain;
 import com.inventory_managerment.baseEntity.BaseEntity;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Positive;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -32,6 +31,9 @@ public class User extends BaseEntity {
     private LocalDate date_of_birth;
     private String status;
     private String remark;
+
+    private Boolean isVerification;
+    private Boolean isDeleted;
 
     private String phoneNumber;
     private String email;
