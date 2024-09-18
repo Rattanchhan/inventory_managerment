@@ -1,7 +1,6 @@
 package com.inventory_managerment.domain;
 import com.inventory_managerment.baseEntity.BaseEntity;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Positive;
 import lombok.*;
 
 import java.math.BigDecimal;
