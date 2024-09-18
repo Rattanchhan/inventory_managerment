@@ -32,6 +32,9 @@ public class User extends BaseEntity {
     private String status;
     private String remark;
 
+    private Boolean isVerification;
+    private Boolean isDeleted;
+
     private String phoneNumber;
     private String email;
 

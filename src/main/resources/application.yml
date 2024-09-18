@@ -12,6 +12,21 @@ spring:
   #     name: ratana
   #     password: R@0900
 
+  
+  # Mail server configuration
+  mail:
+    username: chhanratta92000@gmail.com
+    password: ablu ngch ukta susu
+    host: smtp.gmail.com
+    port: 587
+    properties:
+      mail:
+        smtp: 
+          auth: true
+          starttls: 
+            enable: true
+    debug: true
+
   flyway:
     enabled: true
     url: jdbc:mysql://localhost:3306/inventory
