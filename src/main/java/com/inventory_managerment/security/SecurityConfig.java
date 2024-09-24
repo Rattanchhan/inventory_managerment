@@ -66,25 +66,29 @@ public class SecurityConfig {
         // Security Mechanism (HTTP Basic Auth)
         // HTTP Basic Auth (Username and Password)
 
-        httpSecurity.authorizeHttpRequests(endpoint-> endpoint.
-        requestMatchers(HttpMethod.POST,"api/v1/users/**")
-        .hasRole("Administrator")
+        // httpSecurity.authorizeHttpRequests(endpoint-> endpoint
+        // // requestMatchers(HttpMethod.POST,"api/v1/users/**")
+        // // .hasRole("Administrator")
 
-        .requestMatchers(HttpMethod.POST,"api/v1/auth/**")
-        .permitAll()
+        // .requestMatchers("api/v1/auth/**")
+        // .permitAll()
 
-        .requestMatchers(HttpMethod.GET,"api/v1/users/**")
-        .hasRole("Administrator")
+        // // .requestMatchers(HttpMethod.GET,"api/v1/users/**")
+        // // .hasRole("Administrator")
 
-        .requestMatchers(HttpMethod.DELETE,"api/v1/users/**")  
-        .hasAnyRole("ADMIN")
-        .anyRequest().authenticated());
+        // // .requestMatchers(HttpMethod.DELETE,"api/v1/users/**")  
+        // // .hasAnyRole("ADMIN")
+        // .anyRequest().authenticated());
 
 
-        httpSecurity.httpBasic(Customizer.withDefaults());
+        // httpSecurity.httpBasic(Customizer.withDefaults());
 
         //Disable csrf token 
         httpSecurity.csrf(token -> token.disable());
+
+        // Security Machanism (JWT)
+
+        httpSecurity.oauth2ResourceServer(jwt->jwt.jwt(Customizer.withDefaults()));
 
 
         // Make Stateless Session

@@ -5,6 +5,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.inventory_managerment.feature.auth.dto.AuthResponse;
+import com.inventory_managerment.feature.auth.dto.LoginRequest;
 import com.inventory_managerment.feature.auth.dto.RegisterRequest;
 import com.inventory_managerment.feature.auth.dto.RegisterResponse;
 import com.inventory_managerment.feature.auth.dto.SendVerificationRequest;
@@ -20,6 +23,11 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
     
     private final AuthService authService;
+
+    @PostMapping("/login")
+    public AuthResponse Login(@Valid @RequestBody LoginRequest loginRequest){
+        return authService.login(loginRequest);
+    }
     
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
@@ -30,7 +38,7 @@ public class AuthController {
     @PostMapping("/send-verification")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public String verification(@Valid @RequestBody SendVerificationRequest sendVerificationRequest) throws MessagingException{
-        return authService.isVerification(sendVerificationRequest.email());
+        return authService.sendVerification(sendVerificationRequest.email());
     }
 
     @PostMapping("/resend-verification")

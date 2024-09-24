@@ -1,16 +1,27 @@
 package com.inventory_managerment.feature.auth;
 import java.util.Date;
+
+import org.hibernate.type.descriptor.jdbc.InstantAsTimestampJdbcType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configurers.userdetails.DaoAuthenticationConfigurer;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.thymeleaf.TemplateEngine;
 import com.inventory_managerment.domain.Role;
 import com.inventory_managerment.domain.User;
 import com.inventory_managerment.domain.UserVerification;
+import com.inventory_managerment.feature.auth.dto.AuthResponse;
+import com.inventory_managerment.feature.auth.dto.LoginRequest;
 import com.inventory_managerment.feature.auth.dto.RegisterRequest;
 import com.inventory_managerment.feature.auth.dto.RegisterResponse;
 import com.inventory_managerment.feature.auth.dto.SendVerificationRequest;
@@ -26,6 +37,8 @@ import lombok.RequiredArgsConstructor;
 import java.util.Map;
 import java.util.HashMap;
 import java.time.*;
+import java.util.List;
+import java.time.temporal.ChronoUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +51,8 @@ public class AuthServicesImplementation  implements AuthService{
     private final JavaMailSender javaMailSender;
     private final TemplateEngine templateEngine;
     private final UserVerificationRepository userVerificationRepository;
+    private final DaoAuthenticationProvider daoAuthenticationProvider;
+    private final JwtEncoder accessTokenJwtEncoder;
 
     @Value("${spring.mail.username}")
     private String adminEmail;
@@ -78,7 +93,7 @@ public class AuthServicesImplementation  implements AuthService{
     }
 
     @Override
-    public String isVerification(String email) throws MessagingException{
+    public String sendVerification(String email) throws MessagingException{
 
         //Validate email
         User user = userRepository.findByEmail(email)
@@ -97,6 +112,7 @@ public class AuthServicesImplementation  implements AuthService{
         return prepareTemplateMail(email, user, codeRandom);
 
     }
+    
     public String prepareTemplateMail(String email,User user,String codeRandom){
 
         Map<String,Object> templateModel= new HashMap<String, Object>();
@@ -122,6 +138,7 @@ public class AuthServicesImplementation  implements AuthService{
             return "Error sending email!";
         }
     }
+
     public void prepareMailSend(String toMail,String htmlContent) throws MessagingException{
 
         MimeMessage message = javaMailSender.createMimeMessage();
@@ -182,6 +199,34 @@ public class AuthServicesImplementation  implements AuthService{
           userVerificationRepository.save(verification);
 
           return prepareTemplateMail(user.getEmail(), user, codeRandom);
+    }
+
+    @Override
+    public AuthResponse login(LoginRequest loginRequest) {
+        Authentication authentication= new UsernamePasswordAuthenticationToken(loginRequest.phoneNumber(),loginRequest.password());
+        authentication=daoAuthenticationProvider.authenticate(authentication);
+
+        Instant now = Instant.now();
+        JwtClaimsSet jwtClaimsSet = JwtClaimsSet.builder()
+                                    .id(authentication.getName())
+                                    .subject("Access APIs")
+                                    .issuer(authentication.getName())
+                                    .issuedAt(now)
+                                    .expiresAt(now.plus(30,ChronoUnit.MINUTES))
+                                    .audience(List.of("NextJS","Android","IOS"))
+                                    .claim("isAdmin", true)
+                                    .claim("studentId","ISTAD0010")
+                                    .build();
+
+        String accessToken = accessTokenJwtEncoder
+                            .encode(JwtEncoderParameters.from(jwtClaimsSet))
+                            .getTokenValue();
+
+
+        return AuthResponse.builder()
+                            .accessToken(accessToken)
+                            .tokenType("Bearer")
+                            .build();
     }
     
 }

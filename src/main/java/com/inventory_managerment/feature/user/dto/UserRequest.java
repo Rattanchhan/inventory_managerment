@@ -1,5 +1,4 @@
 package com.inventory_managerment.feature.user.dto;
-import com.inventory_managerment.feature.role.dto.RoleResponse;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
