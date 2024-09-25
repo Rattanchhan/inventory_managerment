@@ -1,10 +1,9 @@
 package com.inventory_managerment.security;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 // import org.springframework.security.core.userdetails.User;
@@ -14,6 +13,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
 
 import lombok.RequiredArgsConstructor;
 
@@ -62,7 +63,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain configureApiSecurity(HttpSecurity httpSecurity) throws Exception{
+    public JwtAuthenticationProvider configAuthenticationProvider(@Qualifier("refreshTokenJwtDecoder")JwtDecoder refreshTokenJwtDecoder){
+        return new JwtAuthenticationProvider(refreshTokenJwtDecoder);
+    }
+
+    @Bean
+    SecurityFilterChain configureApiSecurity(HttpSecurity httpSecurity,@Qualifier("accessTokenJwtDecoder") JwtDecoder jwtDecoder) throws Exception{
         // Security Mechanism (HTTP Basic Auth)
         // HTTP Basic Auth (Username and Password)
 
@@ -88,7 +94,7 @@ public class SecurityConfig {
 
         // Security Machanism (JWT)
 
-        httpSecurity.oauth2ResourceServer(jwt->jwt.jwt(Customizer.withDefaults()));
+        httpSecurity.oauth2ResourceServer(jwt->jwt.jwt(jwtConfigurer->jwtConfigurer.decoder(jwtDecoder)));
 
 
         // Make Stateless Session

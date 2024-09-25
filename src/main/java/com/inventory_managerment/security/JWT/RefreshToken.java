@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPublicKey;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -20,36 +21,35 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 
 @Component
-public class JwtConfig {
-    
-    @Bean
-    KeyPair accessTokenKeypaPair() throws NoSuchAlgorithmException{
+public class RefreshToken {
+    @Bean("refreshTokenKeypaPair")
+    KeyPair refreshTokenKeypaPair() throws NoSuchAlgorithmException{
         KeyPairGenerator keyPaireGenerator = KeyPairGenerator.getInstance("RSA");
         keyPaireGenerator.initialize(2048);
         return keyPaireGenerator.generateKeyPair();
     }
 
-    @Bean
-    RSAKey accessTokenRSAKey(KeyPair keyPair){
+    @Bean("refreshTokenRSAKey")
+    RSAKey refreshTokenRSAKey(@Qualifier("refreshTokenKeypaPair")KeyPair keyPair){
         return new RSAKey.Builder((RSAPublicKey) keyPair.getPublic())
                .privateKey(keyPair.getPrivate())
                .keyID(UUID.randomUUID().toString())
                .build();
     }
 
-    @Bean
-    JwtDecoder accessTokenJwtDecoder(RSAKey rsaKey) throws JOSEException{
+    @Bean("refreshTokenJwtDecoder")
+    JwtDecoder refreshTokenJwtDecoder(@Qualifier("refreshTokenRSAKey")RSAKey rsaKey) throws JOSEException{
         return NimbusJwtDecoder.withPublicKey(rsaKey.toRSAPublicKey()).build();
     }
 
-    @Bean
-    JWKSource <SecurityContext> accessTokenJwkSource(RSAKey rsaKey){
+    @Bean("refreshTokenJwkSource")
+    JWKSource <SecurityContext> refreshTokenJwkSource(@Qualifier("refreshTokenRSAKey")RSAKey rsaKey){
         JWKSet jwkSet = new JWKSet(rsaKey);
         return (jwkSelector,securityContext)-> jwkSelector.select(jwkSet);
     }
 
-    @Bean
-    JwtEncoder accessTokenJwtEncoder(JWKSource<SecurityContext> jwkSource){
+    @Bean("refreshTokenJwtEncoder")
+    JwtEncoder refreshTokenJwtEncoder(@Qualifier("refreshTokenJwkSource")JWKSource<SecurityContext> jwkSource){
         return new  NimbusJwtEncoder(jwkSource);
     }
 }

@@ -1,7 +1,6 @@
 package com.inventory_managerment.feature.dailyReport;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Date;
 
 import com.inventory_managerment.domain.DailyReport;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -5,9 +5,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.inventory_managerment.feature.auth.dto.AuthResponse;
 import com.inventory_managerment.feature.auth.dto.LoginRequest;
+import com.inventory_managerment.feature.auth.dto.RefreshTokenRequest;
 import com.inventory_managerment.feature.auth.dto.RegisterRequest;
 import com.inventory_managerment.feature.auth.dto.RegisterResponse;
 import com.inventory_managerment.feature.auth.dto.SendVerificationRequest;
@@ -24,8 +24,13 @@ public class AuthController {
     
     private final AuthService authService;
 
+    @PostMapping("/refresh-token")
+    public AuthResponse refreshToken(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest){
+        return authService.refreshToken(refreshTokenRequest);
+    }
+
     @PostMapping("/login")
-    public AuthResponse Login(@Valid @RequestBody LoginRequest loginRequest){
+    public AuthResponse login(@Valid @RequestBody LoginRequest loginRequest){
         return authService.login(loginRequest);
     }
     
