@@ -3,6 +3,7 @@ package com.inventory_managerment.security;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -72,19 +73,19 @@ public class SecurityConfig {
         // Security Mechanism (HTTP Basic Auth)
         // HTTP Basic Auth (Username and Password)
 
-        // httpSecurity.authorizeHttpRequests(endpoint-> endpoint
+        httpSecurity.authorizeHttpRequests(endpoint-> endpoint
         // // requestMatchers(HttpMethod.POST,"api/v1/users/**")
         // // .hasRole("Administrator")
 
-        // .requestMatchers("api/v1/auth/**")
-        // .permitAll()
+        .requestMatchers("api/v1/auth/**")
+        .permitAll()
 
-        // // .requestMatchers(HttpMethod.GET,"api/v1/users/**")
-        // // .hasRole("Administrator")
+        .requestMatchers(HttpMethod.GET,"api/v1/users")
+        .hasAuthority("SCOPE_ROLE_Administrator")
 
         // // .requestMatchers(HttpMethod.DELETE,"api/v1/users/**")  
         // // .hasAnyRole("ADMIN")
-        // .anyRequest().authenticated());
+        .anyRequest().authenticated());
 
 
         // httpSecurity.httpBasic(Customizer.withDefaults());

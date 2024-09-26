@@ -1,5 +1,8 @@
 package com.inventory_managerment.feature.auth;
 import java.util.Date;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -36,6 +39,8 @@ import org.thymeleaf.context.Context;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.HashMap;
@@ -45,6 +50,7 @@ import java.time.temporal.ChronoUnit;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthServicesImplementation  implements AuthService{
 
     private final UserRepository userRepository;
@@ -214,40 +220,11 @@ public class AuthServicesImplementation  implements AuthService{
         String scope = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(" "));
         Instant now = Instant.now();
 
-        // AccessToken ClaimsSet
-        JwtClaimsSet jwtAccessTokenClaimsSet = JwtClaimsSet.builder()
-                                    .id(authentication.getName())
-                                    .subject("Access APIs")
-                                    .issuer(authentication.getName())
-                                    .issuedAt(now)
-                                    .expiresAt(now.plus(30,ChronoUnit.MINUTES))
-                                    .audience(List.of("NextJS","Android","IOS"))
-                                    .claim("isAdmin", true)
-                                    .claim("studentId","ISTAD0010")
-                                    .claim("scope", scope)
-                                    .build();
-
-        // RefreshToken ClaimsSet
-        JwtClaimsSet jwtRefreshTokenClaimsSet = JwtClaimsSet.builder()
-                                    .id(authentication.getName())
-                                    .subject("Refresh APIs")
-                                    .issuer(authentication.getName())
-                                    .issuedAt(now)
-                                    .expiresAt(now.plus(30,ChronoUnit.MINUTES))
-                                    .audience(List.of("NextJS","Android","IOS"))
-                                    .claim("isAdmin", true)
-                                    .claim("studentId","ISTAD0010")
-                                    .claim("scope", scope)
-                                    .build();
         // Create AccessToken
-        String accessToken = accessTokenJwtEncoder
-                            .encode(JwtEncoderParameters.from(jwtAccessTokenClaimsSet))
-                            .getTokenValue();
-
+        String accessToken =  createToken(accessTokenJwtEncoder, createClaimsSet(authentication, now, scope, null,"Access APIs"));
+        
         // Create RefreshToken
-        String refreshToken = refreshTokenJwtEncoder
-                            .encode(JwtEncoderParameters.from(jwtRefreshTokenClaimsSet))
-                            .getTokenValue();
+        String refreshToken = createToken(refreshTokenJwtEncoder, createClaimsSet(authentication, now, scope, null,"Refresh Token"));
 
         return AuthResponse.builder()
                             .accessToken(accessToken)
@@ -258,30 +235,70 @@ public class AuthServicesImplementation  implements AuthService{
 
     @Override
     public AuthResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
+        String accessToken;
+        String refreshToken= refreshTokenRequest.refreshToken();
         Authentication authentication = new BearerTokenAuthenticationToken(refreshTokenRequest.refreshToken());
         authentication=jwtAuthenticationProvider.authenticate(authentication);
 
         Jwt jwt = (Jwt)authentication.getPrincipal();
         Instant now = Instant.now();
+        
+        Instant expiresAt = jwt.getExpiresAt();
+        long remainingDays = Duration.between(now, expiresAt).toDays();
 
-        JwtClaimsSet jwtAccessClaimsSet = JwtClaimsSet.builder()
-                                    .id(jwt.getId())
-                                    .subject("Access APIs")
-                                    .issuer(jwt.getId())
-                                    .issuedAt(now)
-                                    .expiresAt(now.plus(30,ChronoUnit.DAYS))
-                                    .audience(List.of("NextJS","Android","IOS"))
-                                    .claim("isAdmin", true)
-                                    .claim("studentId","ISTAD0010")
-                                    .build();
-        String accessToken = accessTokenJwtEncoder
-                            .encode(JwtEncoderParameters.from(jwtAccessClaimsSet))
-                            .getTokenValue();
+        log.info("{}",remainingDays);
 
+        if(remainingDays<=1){
+            refreshToken=createToken(accessTokenJwtEncoder, createClaimsSet(authentication, now, null, jwt,"Access APIs"));
+        }
+
+        accessToken = createToken(accessTokenJwtEncoder, createClaimsSet(authentication, now, null, jwt,"Access APIs"));
         return AuthResponse.builder()
                             .tokenType("Bearer")
                             .accessToken(accessToken)
+                            .refeshToken(refreshToken)
                             .build();
+    }
+
+    public String createToken(JwtEncoder tokentJwtEncoder,JwtClaimsSet jwtClaimsSet){
+        return  tokentJwtEncoder
+                .encode(JwtEncoderParameters.from(jwtClaimsSet))
+                .getTokenValue();
+    }
+
+    public JwtClaimsSet createClaimsSet(Authentication authentication,Instant now,String scope,Jwt jwt,String subject){
+        
+        Instant expired=now.plus(30,ChronoUnit.MINUTES);
+
+        if(jwt!=null){
+            return JwtClaimsSet.builder()
+                    .id(jwt.getId())
+                    .subject(subject)
+                    .issuer(jwt.getId())
+                    .issuedAt(now)
+                    .expiresAt(now.plus(30,ChronoUnit.DAYS))
+                    .audience(jwt.getAudience())
+                    .claim("isAdmin", true)
+                    .claim("studentId","ISTAD0010")
+                    .claim("scope", jwt.getClaimAsString("scope"))
+                    .build();
+        }
+        else{
+            if(subject=="Refresh Token"){
+                expired= now.plus(30,ChronoUnit.DAYS);
+            }
+            return JwtClaimsSet.builder()
+                    .id(authentication.getName())
+                    .subject(subject)
+                    .issuer(authentication.getName())
+                    .issuedAt(now)
+                    .expiresAt(expired)
+                    .audience(List.of("NextJS","Android","IOS"))
+                    .claim("isAdmin", true)
+                    .claim("studentId","ISTAD0010")
+                    .claim("scope", scope)
+                    .build();
+        }
     }
     
 }
