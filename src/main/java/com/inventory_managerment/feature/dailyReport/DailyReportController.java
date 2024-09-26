@@ -1,6 +1,5 @@
 package com.inventory_managerment.feature.dailyReport;
 import java.time.LocalDate;
-import java.util.Date;
 import com.inventory_managerment.feature.dailyReport.dto.DailyReportResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
